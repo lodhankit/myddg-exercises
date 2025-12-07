@@ -110,9 +110,13 @@ SparseMatrix<size_t> SimplicialComplexOperators::buildFaceEdgeAdjacencyMatrix() 
  * Returns: Vector of length |V|, where |V| = # of vertices in the mesh.
  */
 Vector<size_t> SimplicialComplexOperators::buildVertexVector(const MeshSubset& subset) const {
-
-    // TODO
-    return Vector<size_t>::Zero(1);
+    size_t N = mesh->nVertices();
+    Vector<size_t> vec(N);
+    vec.setZero();
+    for (auto v : subset.vertices) {
+        vec[v] = 1;  // dereference iterator or just value
+    }
+    return vec;
 }
 
 /*
@@ -124,7 +128,13 @@ Vector<size_t> SimplicialComplexOperators::buildVertexVector(const MeshSubset& s
 Vector<size_t> SimplicialComplexOperators::buildEdgeVector(const MeshSubset& subset) const {
 
     // TODO
-    return Vector<size_t>::Zero(1);
+    size_t N = mesh->nEdges();
+    Vector<size_t> vec(N);
+    vec.setZero();
+    for (auto e:subset.edges){
+        vec[e] = 1;
+    }
+    return vec;
 }
 
 /*
@@ -135,8 +145,13 @@ Vector<size_t> SimplicialComplexOperators::buildEdgeVector(const MeshSubset& sub
  */
 Vector<size_t> SimplicialComplexOperators::buildFaceVector(const MeshSubset& subset) const {
 
-    // TODO
-    return Vector<size_t>::Zero(1);
+    size_t N = mesh->nFaces();
+    Vector<size_t> vec(N);
+    vec.setZero();
+    for (size_t f:subset.faces){
+        vec[f] = 1;
+    }
+    return vec;
 }
 
 /*
