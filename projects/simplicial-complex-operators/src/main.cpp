@@ -11,9 +11,11 @@
 #include "imgui.h"
 
 #include "simplicial-complex-operators.h"
+#include <iostream>
 
 using namespace geometrycentral;
 using namespace geometrycentral::surface;
+using namespace std;
 
 // == Geometry-central data
 std::unique_ptr<ManifoldSurfaceMesh> mesh_uptr;

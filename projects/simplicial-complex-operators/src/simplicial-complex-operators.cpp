@@ -1,8 +1,10 @@
 // Implement member functions for SimplicialComplexOperators class.
 #include "simplicial-complex-operators.h"
-
+#include <iostream>
+#include <Eigen/Sparse>
 using namespace geometrycentral;
 using namespace geometrycentral::surface;
+using namespace std;
 
 /*
  * Assign a unique index to each vertex, edge, and face of a mesh.
@@ -60,8 +62,21 @@ SparseMatrix<size_t> SimplicialComplexOperators::buildVertexEdgeAdjacencyMatrix(
     // TODO
     // Note: You can build an Eigen sparse matrix from triplets, then return it as a Geometry Central SparseMatrix.
     // See <https://eigen.tuxfamily.org/dox/group__TutorialSparse.html> for documentation.
+    size_t numRows = mesh->nEdges();
+    size_t numCols = mesh->nVertices();
+    vector<Eigen::Triplet<double>> triplets;
+    for (Edge e: mesh->edges()){
+        Halfedge he = e.halfedge();
+        Vertex vA = he.tailVertex();
+        Vertex vB = he.tipVertex();
+        triplets.emplace_back(e.getIndex(),vA.getIndex(),1);
+        triplets.emplace_back(e.getIndex(),vB.getIndex(),1);
+    }
+    SparseMatrix<size_t> A;
+    A.resize(numRows, numCols);
+    A.setFromTriplets(triplets.begin(),triplets.end());
 
-    return identityMatrix<size_t>(1); // placeholder
+    return A; // placeholder
 }
 
 /*
@@ -73,7 +88,19 @@ SparseMatrix<size_t> SimplicialComplexOperators::buildVertexEdgeAdjacencyMatrix(
 SparseMatrix<size_t> SimplicialComplexOperators::buildFaceEdgeAdjacencyMatrix() const {
 
     // TODO
-    return identityMatrix<size_t>(1); // placeholder
+    size_t numRows = mesh->nFaces();
+    size_t numCols = mesh->nEdges();
+    vector<Eigen::Triplet<double>> triplets;
+    for (Face f: mesh->faces()){
+        for (Halfedge he: f.adjacentHalfedges()){
+            Edge e = he.edge();
+            triplets.emplace_back(f.getIndex(),e.getIndex(),1);
+        }
+    }
+    SparseMatrix<size_t> A;
+    A.resize(numRows, numCols);
+    A.setFromTriplets(triplets.begin(),triplets.end());
+    return A; // placeholder
 }
 
 /*
