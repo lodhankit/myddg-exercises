@@ -163,7 +163,41 @@ Vector<size_t> SimplicialComplexOperators::buildFaceVector(const MeshSubset& sub
 MeshSubset SimplicialComplexOperators::star(const MeshSubset& subset) const {
 
     // TODO
-    return subset; // placeholder
+    set<size_t> vert;
+    set<size_t> edg;
+    set<size_t> fc;
+    Vector<size_t> vertex_vector = this->buildVertexVector(subset);
+    Vector<size_t> edge_vector = this->buildEdgeVector(subset);
+    Vector<size_t> face_vector = this->buildFaceVector(subset);
+    for (Vertex v:mesh->vertices()){
+        if(vertex_vector[v.getIndex()]){
+            vert.insert(v.getIndex());
+            for(Edge e:v.adjacentEdges()){
+                edg.insert(e.getIndex());
+            }
+            for(Face f1:v.adjacentFaces()){
+                fc.insert(f1.getIndex());
+            }
+        }
+    }
+    for (Edge ed:mesh->edges()){
+        if(edge_vector[ed.getIndex()]){
+            edg.insert(ed.getIndex());
+            for (Face f:ed.adjacentFaces()){
+                fc.insert(f.getIndex());
+            }
+        }
+    }
+    for (Face f:mesh->faces()){
+        if(face_vector[f.getIndex()]){
+            fc.insert(f.getIndex());
+        }
+    }
+    MeshSubset out_subset;
+    out_subset.vertices = vert;
+    out_subset.edges = edg;
+    out_subset.faces = fc;
+    return out_subset; // placeholder
 }
 
 
@@ -174,9 +208,41 @@ MeshSubset SimplicialComplexOperators::star(const MeshSubset& subset) const {
  * Returns: The closure of the given subset.
  */
 MeshSubset SimplicialComplexOperators::closure(const MeshSubset& subset) const {
-
-    // TODO
-    return subset; // placeholder
+    set<size_t> vert;
+    set<size_t> edg;
+    set<size_t> fc;
+    Vector<size_t> vertex_vector = this->buildVertexVector(subset);
+    Vector<size_t> edge_vector = this->buildEdgeVector(subset);
+    Vector<size_t> face_vector = this->buildFaceVector(subset);
+    for (Vertex v:mesh->vertices()){
+        if(vertex_vector[v.getIndex()]){
+            vert.insert(v.getIndex());
+        }
+    }
+    for (Edge ed:mesh->edges()){
+        if(edge_vector[ed.getIndex()]){
+            edg.insert(ed.getIndex());
+            for (Vertex v1:ed.adjacentVertices()){
+                vert.insert(v1.getIndex());
+            }
+        }
+    }
+    for (Face f:mesh->faces()){
+        if(face_vector[f.getIndex()]){
+            fc.insert(f.getIndex());
+            for (Edge e1:f.adjacentEdges()){
+                edg.insert(e1.getIndex());
+            }
+            for (Vertex v2:f.adjacentVertices()){
+                vert.insert(v2.getIndex());
+            }
+        }
+    }
+    MeshSubset out_subset;
+    out_subset.vertices = vert;
+    out_subset.edges = edg;
+    out_subset.faces = fc;
+    return out_subset; // placeholder
 }
 
 /*
@@ -186,9 +252,11 @@ MeshSubset SimplicialComplexOperators::closure(const MeshSubset& subset) const {
  * Returns: The link of the given subset.
  */
 MeshSubset SimplicialComplexOperators::link(const MeshSubset& subset) const {
-
+    MeshSubset subset1 = this->closure(this->star(subset));
+    MeshSubset subset2 = this->star(this->closure(subset));
+    subset1.deleteSubset(subset2);
     // TODO
-    return subset; // placeholder
+    return subset1; // placeholder
 }
 
 /*
