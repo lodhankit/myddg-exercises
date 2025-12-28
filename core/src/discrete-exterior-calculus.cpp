@@ -29,6 +29,9 @@
 
 #include "geometrycentral/surface/vertex_position_geometry.h"
 
+#include<bits/stdc++.h>
+
+using namespace std;
 namespace geometrycentral {
 namespace surface {
 
@@ -43,7 +46,16 @@ namespace surface {
 SparseMatrix<double> VertexPositionGeometry::buildHodgeStar0Form() const {
 
     // TODO
-    return identityMatrix<double>(1); // placeholder
+    double nvertex = this->mesh.nVertices();
+    vector<Eigen::Triplet<double>> triplets;
+    for(Vertex v: mesh.vertices()){
+        double dual_area = this->barycentricDualArea(v);
+        triplets.emplace_back(v.getIndex(), v.getIndex(), dual_area);
+    }
+    SparseMatrix<double> A;
+    A.resize(nvertex, nvertex);
+    A.setFromTriplets(triplets.begin(), triplets.end());
+    return A; // placeholder
 }
 
 /*
@@ -55,7 +67,20 @@ SparseMatrix<double> VertexPositionGeometry::buildHodgeStar0Form() const {
 SparseMatrix<double> VertexPositionGeometry::buildHodgeStar1Form() const {
 
     // TODO
-    return identityMatrix<double>(1); // placeholder
+    double nedge = this->mesh.nEdges();
+    vector<Eigen::Triplet<double>> triplets;
+    for(Edge ed: mesh.edges()){
+        Halfedge he1 = ed.halfedge();
+        Halfedge he2 = he1.twin();
+        double cot1 = this->cotan(he1);
+        double cot2 = this->cotan(he2);
+        double dual_area = (1.0/2.0)*(cot1+ cot2);
+        triplets.emplace_back(ed.getIndex(), ed.getIndex(), dual_area);
+    }
+    SparseMatrix<double> A;
+    A.resize(nedge, nedge);
+    A.setFromTriplets(triplets.begin(), triplets.end());
+    return A; // placeholder
 }
 
 /*
@@ -67,7 +92,16 @@ SparseMatrix<double> VertexPositionGeometry::buildHodgeStar1Form() const {
 SparseMatrix<double> VertexPositionGeometry::buildHodgeStar2Form() const {
 
     // TODO
-    return identityMatrix<double>(1); // placeholder
+    double nface = this->mesh.nFaces();
+    vector<Eigen::Triplet<double>> triplets;
+    for(Face f: mesh.faces()){
+        double area = (1.0/this->faceArea(f));
+        triplets.emplace_back(f.getIndex(), f.getIndex(), area);
+    }
+    SparseMatrix<double> A;
+    A.resize(nface, nface);
+    A.setFromTriplets(triplets.begin(), triplets.end());
+    return A; // placeholder
 }
 
 /*
@@ -79,7 +113,20 @@ SparseMatrix<double> VertexPositionGeometry::buildHodgeStar2Form() const {
 SparseMatrix<double> VertexPositionGeometry::buildExteriorDerivative0Form() const {
 
     // TODO
-    return identityMatrix<double>(1); // placeholder
+    double nedge = this->mesh.nEdges();
+    double nvertex = this->mesh.nVertices();
+    vector<Eigen::Triplet<double>> triplets;
+    for(Edge e:mesh.edges()){
+        Vertex v1 = e.halfedge().tailVertex();
+        Vertex v2 = e.halfedge().tipVertex();
+
+        triplets.emplace_back(e.getIndex(), v1.getIndex(), -1.0);
+        triplets.emplace_back(e.getIndex(), v2.getIndex(), 1.0);
+    }
+    SparseMatrix<double> A;
+    A.resize(nedge, nvertex);
+    A.setFromTriplets(triplets.begin(), triplets.end());
+    return A; // placeholder
 }
 
 /*
@@ -91,7 +138,21 @@ SparseMatrix<double> VertexPositionGeometry::buildExteriorDerivative0Form() cons
 SparseMatrix<double> VertexPositionGeometry::buildExteriorDerivative1Form() const {
 
     // TODO
-    return identityMatrix<double>(1); // placeholder
+    double nface = this->mesh.nFaces();
+    double nedge = this->mesh.nEdges();
+    vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(3 * nface);
+    for(Face f1:mesh.faces()){
+        for(Halfedge ed2:f1.adjacentHalfedges()){
+            Edge e = ed2.edge();
+            double sign = (ed2 == e.halfedge()) ? 1.0: -1.0;
+            triplets.emplace_back(f1.getIndex(), e.getIndex(), sign);
+        }
+    }
+    SparseMatrix<double> A;
+    A.resize(nface, nedge);
+    A.setFromTriplets(triplets.begin(), triplets.end());
+    return A; // placeholder
 }
 
 } // namespace surface
