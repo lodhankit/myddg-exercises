@@ -31,7 +31,9 @@
 
 #include "geometrycentral/surface/vertex_position_geometry.h"
 #include <complex>
+#include <iostream>
 
+using namespace std;
 namespace geometrycentral {
 namespace surface {
 
@@ -81,7 +83,16 @@ double VertexPositionGeometry::totalArea() const {
 double VertexPositionGeometry::cotan(Halfedge he) const {
 
     // TODO
-    return 0; // placeholder
+    Vertex start_v1 = he.next().tailVertex();
+    Vertex end_v1 = he.next().tipVertex();
+
+    Vertex start_v2 = he.next().next().tailVertex();
+    Vertex end_v2 = he.next().next().tipVertex();
+
+    Vector3 u = this->inputVertexPositions[start_v1] - this->inputVertexPositions[end_v1];
+    Vector3 v = this->inputVertexPositions[end_v2] - this->inputVertexPositions[start_v2];
+
+    return dot(u,v)/norm(cross(u,v)); // placeholder
 }
 
 /*
@@ -93,7 +104,11 @@ double VertexPositionGeometry::cotan(Halfedge he) const {
 double VertexPositionGeometry::barycentricDualArea(Vertex v) const {
 
     // TODO
-    return 0; // placeholder
+    double sum_face_area = 0;
+    for(Face f:v.adjacentFaces()){
+        sum_face_area += (1.0/3.0)*this->faceArea(f);
+    }
+    return sum_face_area; // placeholder
 }
 
 /*
